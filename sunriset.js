@@ -194,11 +194,8 @@ function astronomical_twilight(year, month, day, lon, lat) {
 }
 
 
-
-
-
 /*
- * Calculate sun rise and set time for a given sun altitude.
+ * Calculate sun rise and set time for a given date, palce, and sun altitude.
  *
  * This is the workhorse function for sun rise/set times.
  *
@@ -236,7 +233,6 @@ function __sunriset__(year, month, day, lon, lat, altit, upper_limb) {
     tsouth,     /* Time when Sun is at south */
     sidtime;    /* Local sidereal time */
     var ret = {};
-
     var rc = 0; /* Return code from function - usually 0 */
 
     /* Compute d of 12h local mean solar time */
@@ -282,24 +278,27 @@ function __sunriset__(year, month, day, lon, lat, altit, upper_limb) {
 
 
 /*
- * The "workhorse" function
+ * Calculate length of day for a given date, place, and sun altitude.
+ *
+ * This is the workhorse function for day lengths.
+ *
+ * ### Arguments
+ * `year,month,date`: calendar date, 1801-2099 only.
+ * `lon, lat`: longitude and latitude. See Notes.
+ *      The longitude value is not critical in this function. Set it to the
+ *      correct longitude if you're picky, otherwise set to to, say, 0.0.
+ * `altit`: the altitude which the Sun should cross.
+ *      Set to -35/60 degrees for normal rise/set,
+ *      -6 degrees for civil twilight, -12 degrees for nautical twilight, and
+ *      -18 degrees for astronomical twilight.
+ * `upper_limb`: non-zero -> upper limb, zero -> center.
+ *      Set to non-zero (e.g. 1) when computing rise/set times, and to zero when
+ *      computing start/end of twilight.
+ *
+ * ### Returns
+ * The length of the day in floating-point hours (e.g. 12h 30m is 12.5)
  */
 function __daylen__(year, month, day, lon, lat, altit, upper_limb) {
-    /**********************************************************************/
-    /* Note: year,month,date = calendar date, 1801-2099 only.             */
-    /*       Eastern longitude positive, Western longitude negative       */
-    /*       Northern latitude positive, Southern latitude negative       */
-    /*       The longitude value is not critical. Set it to the correct   */
-    /*       longitude if you're picky, otherwise set to to, say, 0.0     */
-    /*       The latitude however IS critical - be sure to get it correct */
-    /*       altit = the altitude which the Sun should cross              */
-    /*               Set to -35/60 degrees for rise/set, -6 degrees       */
-    /*               for civil, -12 degrees for nautical and -18          */
-    /*               degrees for astronomical twilight.                   */
-    /*         upper_limb: non-zero -> upper limb, zero -> center         */
-    /*               Set to non-zero (e.g. 1) when computing day length   */
-    /*               and to zero when computing day+twilight length.      */
-    /**********************************************************************/
     var  d,  /* Days since 2000 Jan 0.0 (negative before) */
     obl_ecl,    /* Obliquity (inclination) of Earth's axis */
     sr,         /* Solar distance, astronomical units */
