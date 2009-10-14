@@ -11,6 +11,7 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
     <script type="text/javascript" src="sunriset.js"></script>
     <script type="text/javascript">
+
         function undecimalise_time(h) {
             return "" + Math.floor(h) + ":" +
                    Math.round((h - Math.floor(h)) * 60.0);
@@ -18,10 +19,14 @@
 
         $(function() {
             now = new Date();
-            myrs = sun_rise_set(now.getFullYear(), now.getMonth()+1, now.getDate(), 0.26, 51.56);
-            $("#rise").html(undecimalise_time(myrs.trise));
-            $("#set").html(undecimalise_time(myrs.tset));
+            myrs = sunriset.sun_rise_set(now,
+                                        0.26,
+                                        51.56);
+            $("#rise").html(myrs.rise.toString());
+            $("#set").html(myrs.set.toString());
         });
+
+        console.log("foo");
     </script>
 </head>
 <body>
