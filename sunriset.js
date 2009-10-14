@@ -1,9 +1,80 @@
 /*
  * sunriset.js
+ * ===========
  *
  * Computes Sun rise/set and twilight times for any date and coordinates.
  *
- * Based on SUNRISET.C
+ * Usage
+ * -----
+ * day_length(year, month, day, lon, lat)
+ * day_civil_twilight_length(year, month, day, lon, lat)
+ * day_nautical_twilight_length(year, month, day, lon, lat)
+ * day_astronomical_twilight_length(year, month, day, lon, lat)
+ * sun_rise_set(year, month, day, lon, lat)
+ * civil_twilight(year, month, day, lon, lat)
+ * nautical_twilight(year, month, day, lon, lat)
+ * astronomical_twilight(year, month, day, lon, lat)
+ *
+ *
+ * Example
+ * -------
+ * times = sun_rise_set(2009, 10, 14, 0.26, 51.56);
+ * alert("Sunrise: " + times.trise);
+ * alert("Sunset: " + times.tset);
+ *
+ *
+ * Notes
+ * -----
+ * Longitudes and latitudes are specified in floating point degrees.
+ * Longitudes EAST of Greenwich are POSITIVE.
+ * Longitudes WEST of Greenwich are NEGATIVE.
+ * Latitudes NORTH of the equator are POSITIVE.
+ * Latitudes SOUTH of the equator are NEGATIVE.
+ *
+ * Months are numbered from 1 to 12 (so beware when using Date.getMonth() - you
+ * will need to add 1.
+ *
+ * Years are expected in full 4-digit glory (so use Date.getFullYear() not
+ * Date.getYear()).
+ *
+ * The day_* functions return a floating point hour value (e.g. 2.5 = 2h 30m.)
+ *
+ * The other four functions return an object with three properties:
+ * rc: -1 if the sun is never above the horizon, +1 if the sun is always above
+ *     the horizon, otherwise 0 (the sun rises and sets as normal.)
+ * trise: time of sunrise (or start of period) as floating point hour value.
+ * tset: time of sunset (or end of period) as floating point hour value.
+ *
+ *
+ * Copyright and licence
+ * ---------------------
+ * Copyright (c) 2009, Neil de Carteret
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY <copyright holder> ''AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <copyright holder> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * sunriset.js isbased on SUNRISET.C by Paul Schlyter.
+ * Copyright notice from SUNRISET.C:
  *
  * Written as DAYLEN.C, 1989-08-16
  * Modified to SUNRISET.C, 1992-12-01
@@ -24,8 +95,8 @@ function days_since_2000_Jan_0 (y, m, d) {
  * Some conversion factors between radians and degrees
  */
 var PI = Math.PI;
-var RADEG = ( 180.0 / PI );
-var DEGRAD = ( PI / 180.0 );
+var RADEG = (180.0 / PI);
+var DEGRAD = (PI / 180.0);
 var INV360 = (1.0/360.0);
 
 /*
@@ -34,7 +105,6 @@ var INV360 = (1.0/360.0);
 function sind(x) { return Math.sin(x * DEGRAD); }
 function cosd(x) { return Math.cos(x * DEGRAD); }
 function tand(x) { return Math.tan(x * DEGRAD); }
-
 function atand(x) { return RADEG * Math.atan(x); }
 function asind(x) { return RADEG * Math.asin(x); }
 function acosd(x) { return RADEG * Math.acos(x); }
@@ -101,63 +171,62 @@ function sun_rise_set(year, month, day, lon, lat) {
  * Civil twilight starts/ends when the Sun's center is 6 degrees below
  * the horizon.
  */
-function civil_twilight(year,month,day,lon,lat,start,end) {
+function civil_twilight(year, month, day, lon, lat) {
     return __sunriset__(year, month, day, lon, lat, -6.0, 0);
 }
 
 /*
- * This macro computes the start and end times of nautical twilight.
+ * Compute the start and end times of nautical twilight.
  * Nautical twilight starts/ends when the Sun's center is 12 degrees
  * below the horizon.
  */
-function nautical_twilight(year,month,day,lon,lat,start,end) {
+function nautical_twilight(year, month, day, lon, lat) {
     return __sunriset__(year, month, day, lon, lat, -12.0, 0);
 }
 
 /*
- * This macro computes the start and end times of astronomical twilight.
+ * Computes the start and end times of astronomical twilight.
  * Astronomical twilight starts/ends when the Sun's center is 18 degrees
  * below the horizon.
  */
-function astronomical_twilight(year,month,day,lon,lat,start,end) {
+function astronomical_twilight(year, month, day, lon, lat) {
     return __sunriset__(year, month, day, lon, lat, -18.0, 0);
 }
 
 
 
 
-/* The "workhorse" function for sun rise/set times */
 
+/*
+ * Calculate sun rise and set time for a given sun altitude.
+ *
+ * This is the workhorse function for sun rise/set times.
+ *
+ * ### Arguments
+ * `year,month,date`: calendar date, 1801-2099 only.
+ * `lon, lat`: longitude and latitude. See Notes.
+ *      The longitude value IS critical in this function!
+ * `altit`: the altitude which the Sun should cross.
+ *      Set to -35/60 degrees for normal rise/set,
+ *      -6 degrees for civil twilight, -12 degrees for nautical twilight, and
+ *      -18 degrees for astronomical twilight.
+ * `upper_limb`: non-zero -> upper limb, zero -> center.
+ *      Set to non-zero (e.g. 1) when computing rise/set times, and to zero when
+ *      computing start/end of twilight.
+ *
+ * ### Returns
+ * An object with three properties:
+ * `rc`: 0 = sun rises/sets this day. trise and tset are times.
+ *      +1 = sun above the specified "horizon" 24 hours. trise set to time when
+ *           the sun is at south, minus 12 hours while tset is set to the south
+ *           time plus 12 hours. "Day" length = 24 hours.
+ *      -1 = sun is below the specified "horizon" 24 hours.
+ *           "Day" length = 0 hours, *trise and *tset are both set to the time
+ *           when the sun is at south.
+ * `trise`: time of sunrise (or start of period) as floating point hour value.
+ * `tset`: time of sunset (or end of period) as floating point hour value.
+ */
 function __sunriset__(year, month, day, lon, lat, altit, upper_limb) {
-    /**********************************************************************/
-    /* Note: year,month,date = calendar date, 1801-2099 only.             */
-    /*       Eastern longitude positive, Western longitude negative       */
-    /*       Northern latitude positive, Southern latitude negative       */
-    /*       The longitude value IS critical in this function!            */
-    /*       altit = the altitude which the Sun should cross              */
-    /*               Set to -35/60 degrees for rise/set, -6 degrees       */
-    /*               for civil, -12 degrees for nautical and -18          */
-    /*               degrees for astronomical twilight.                   */
-    /*         upper_limb: non-zero -> upper limb, zero -> center         */
-    /*               Set to non-zero (e.g. 1) when computing rise/set     */
-    /*               times, and to zero when computing start/end of       */
-    /*               twilight.                                            */
-    /*        *rise = where to store the rise time                        */
-    /*        *set  = where to store the set  time                        */
-    /*                Both times are relative to the specified altitude,  */
-    /*                and thus this function can be used to comupte       */
-    /*                various twilight times, as well as rise/set times   */
-    /* Return value:  0 = sun rises/sets this day, times stored at        */
-    /*                    *trise and *tset.                               */
-    /*               +1 = sun above the specified "horizon" 24 hours.     */
-    /*                    *trise set to time when the sun is at south,    */
-    /*                    minus 12 hours while *tset is set to the south  */
-    /*                    time plus 12 hours. "Day" length = 24 hours     */
-    /*               -1 = sun is below the specified "horizon" 24 hours   */
-    /*                    "Day" length = 0 hours, *trise and *tset are    */
-    /*                    both set to the time when the sun is at south.  */
-    /*                                                                    */
-    /**********************************************************************/
     var  d,  /* Days since 2000 Jan 0.0 (negative before) */
     sr,         /* Solar distance, astronomical units */
     sRA,        /* Sun's Right Ascension */
@@ -168,7 +237,7 @@ function __sunriset__(year, month, day, lon, lat, altit, upper_limb) {
     sidtime;    /* Local sidereal time */
     var ret = {};
 
-    var rc = 0; /* Return cde from function - usually 0 */
+    var rc = 0; /* Return code from function - usually 0 */
 
     /* Compute d of 12h local mean solar time */
     d = days_since_2000_Jan_0(year,month,day) + 0.5 - lon/360.0;
@@ -209,8 +278,7 @@ function __sunriset__(year, month, day, lon, lat, altit, upper_limb) {
     ret.tset  = tsouth + t;
     ret.rc = rc;
     return ret;
-}  /* __sunriset__ */
-
+}
 
 
 /*
