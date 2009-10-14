@@ -1,17 +1,15 @@
 /*
-
-SUNRISET.C - computes Sun rise/set times, start/end of twilight, and
-             the length of the day at any date and latitude
-
-Written as DAYLEN.C, 1989-08-16
-
-Modified to SUNRISET.C, 1992-12-01
-
-(c) Paul Schlyter, 1989, 1992
-
-Released to the public domain by Paul Schlyter, December 1992
-
-*/
+ * sunriset.js
+ *
+ * Computes Sun rise/set and twilight times for any date and coordinates.
+ *
+ * Based on SUNRISET.C
+ *
+ * Written as DAYLEN.C, 1989-08-16
+ * Modified to SUNRISET.C, 1992-12-01
+ * (c) Paul Schlyter, 1989, 1992
+ * Released to the public domain by Paul Schlyter, December 1992
+ */
 
 
 /*
@@ -19,7 +17,7 @@ Released to the public domain by Paul Schlyter, December 1992
  * (which is equal to 1999 Dec 31, 0h UT)
  */
 function days_since_2000_Jan_0 (y, m, d) {
-    return (367*(y)-((7*((y)+(((m)+9)/12)))/4)+((275*(m))/9)+(d)-730530);
+    return 367*y - ((7*(y+((m+9)/12)))/4) + ((275*m)/9) +d-730530;
 }
 
 /*
@@ -104,7 +102,7 @@ function sun_rise_set(year, month, day, lon, lat) {
  * the horizon.
  */
 function civil_twilight(year,month,day,lon,lat,start,end) {
-    return __sunriset__(year, month, day, lon, lat, -6.0, 0, start, end);
+    return __sunriset__(year, month, day, lon, lat, -6.0, 0);
 }
 
 /*
@@ -113,7 +111,7 @@ function civil_twilight(year,month,day,lon,lat,start,end) {
  * below the horizon.
  */
 function nautical_twilight(year,month,day,lon,lat,start,end) {
-    return __sunriset__(year, month, day, lon, lat, -12.0, 0, start, end);
+    return __sunriset__(year, month, day, lon, lat, -12.0, 0);
 }
 
 /*
@@ -122,7 +120,7 @@ function nautical_twilight(year,month,day,lon,lat,start,end) {
  * below the horizon.
  */
 function astronomical_twilight(year,month,day,lon,lat,start,end) {
-    return __sunriset__(year, month, day, lon, lat, -18.0, 0, start, end);
+    return __sunriset__(year, month, day, lon, lat, -18.0, 0);
 }
 
 
