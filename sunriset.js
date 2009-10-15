@@ -6,19 +6,19 @@
  *
  * Usage
  * -----
- * day_length(year, month, day, lon, lat)
- * day_civil_twilight_length(year, month, day, lon, lat)
- * day_nautical_twilight_length(year, month, day, lon, lat)
- * day_astronomical_twilight_length(year, month, day, lon, lat)
- * sun_rise_set(year, month, day, lon, lat)
- * civil_twilight(year, month, day, lon, lat)
- * nautical_twilight(year, month, day, lon, lat)
- * astronomical_twilight(year, month, day, lon, lat)
+ * day_length(date, lon, lat)
+ * day_civil_twilight_length(date, lon, lat)
+ * day_nautical_twilight_length(date, lon, lat)
+ * day_astronomical_twilight_lengthdate, lon, lat)
+ * sun_rise_set(date, lon, lat)
+ * civil_twilight(date, lon, lat)
+ * nautical_twilight(date, lon, lat)
+ * astronomical_twilight(date, lon, lat)
  *
  *
  * Example
  * -------
- * times = sun_rise_set(2009, 10, 14, 0.26, 51.56);
+ * times = sun_rise_set(new Date(), 0.26, 51.56);
  * alert("Sunrise: " + times.trise);
  * alert("Sunset: " + times.tset);
  *
@@ -31,19 +31,13 @@
  * Latitudes NORTH of the equator are POSITIVE.
  * Latitudes SOUTH of the equator are NEGATIVE.
  *
- * Months are numbered from 1 to 12 (so beware when using Date.getMonth() - you
- * will need to add 1.
- *
- * Years are expected in full 4-digit glory (so use Date.getFullYear() not
- * Date.getYear()).
- *
- * The day_* functions return a floating point hour value (e.g. 2.5 = 2h 30m.)
+ * The day_* functions return ???XXX
  *
  * The other four functions return an object with three properties:
  * rc: -1 if the sun is never above the horizon, +1 if the sun is always above
  *     the horizon, otherwise 0 (the sun rises and sets as normal.)
- * trise: time of sunrise (or start of period) as floating point hour value.
- * tset: time of sunset (or end of period) as floating point hour value.
+ * rise: time of sunrise (or start of period) as Date object.
+ * set: time of sunset (or end of period) as Date object.
  *
  *
  * Copyright and licence
